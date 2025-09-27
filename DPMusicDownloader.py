@@ -12,18 +12,19 @@ def descargar(url, carpeta_salida, formato, ffmpeg_path, progress_hook=None):
                 'preferredquality': '192',
             }],
         }
-    else:  # mp4
+    else:  # mp4 con audio garantizado
         opciones = {
-            # descarga mejor video y mejor audio y los combina
-            'format': 'bestvideo+bestaudio/best',
+            # baja mejor video y mejor audio
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio',
             'merge_output_format': 'mp4',
             'outtmpl': f'{carpeta_salida}/%(title)s.%(ext)s',
             'ffmpeg_location': ffmpeg_path,
-            # asegura que ffmpeg una los streams
-            'postprocessors': [{
-                'key': 'FFmpegVideoConvertor',
-                'preferedformat': 'mp4'
-            }],
+            'postprocessors': [
+                {   # convierte el audio si está en opus → AAC dentro del mp4
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4'
+                }
+            ],
         }
 
     if progress_hook:
