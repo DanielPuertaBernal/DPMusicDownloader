@@ -1,6 +1,3 @@
-"""
-Módulo para gestionar la información y procesamiento de playlists.
-"""
 import yt_dlp
 from .url_detector import es_url_radio_o_mix
 

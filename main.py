@@ -1,7 +1,3 @@
-"""
-DPMusicDownloader - Aplicación principal
-Descargador de música y videos de YouTube con interfaz gráfica.
-"""
 import tkinter as tk
 from ui import DownloaderApp
 

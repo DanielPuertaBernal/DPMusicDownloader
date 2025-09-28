@@ -1,6 +1,3 @@
-"""
-Módulo para gestionar la configuración de la aplicación.
-"""
 import os
 import json
 

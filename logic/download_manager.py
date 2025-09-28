@@ -1,6 +1,3 @@
-"""
-Módulo principal para gestionar las descargas de YouTube.
-"""
 import yt_dlp
 import os
 

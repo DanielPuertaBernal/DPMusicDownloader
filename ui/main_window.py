@@ -1,6 +1,3 @@
-"""
-Ventana principal de la aplicación DPMusicDownloader.
-"""
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk

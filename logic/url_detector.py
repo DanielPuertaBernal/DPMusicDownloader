@@ -1,7 +1,3 @@
-"""
-Módulo para detectar y clasificar diferentes tipos de URLs de YouTube.
-"""
-
 def es_url_radio_o_mix(url):
     """Detecta si es una URL de radio o mix de YouTube Music"""
     radio_indicators = [

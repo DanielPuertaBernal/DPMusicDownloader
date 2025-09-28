@@ -1,6 +1,3 @@
-"""
-Diálogo para selección de videos en playlists.
-"""
 import tkinter as tk
 from tkinter import messagebox, ttk
 
