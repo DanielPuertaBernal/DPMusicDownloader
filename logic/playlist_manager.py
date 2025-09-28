@@ -1,15 +1,8 @@
+"""
+Módulo para gestionar la información y procesamiento de playlists.
+"""
 import yt_dlp
-
-def es_url_radio_o_mix(url):
-    """Detecta si es una URL de radio o mix de YouTube Music"""
-    radio_indicators = [
-        'start_radio=1',
-        'radio',
-        'RD',  # Radio prefix en las playlist IDs
-        'mix',
-        'shuffle=1'
-    ]
-    return any(indicator in url.lower() for indicator in radio_indicators)
+from .url_detector import es_url_radio_o_mix
 
 def es_playlist(url):
     """Detecta si la URL es una playlist de YouTube"""
@@ -114,47 +107,3 @@ def obtener_info_playlist(url):
     except Exception as e:
         print(f"Error al obtener info de playlist: {e}")
         return None
-
-def descargar(url, carpeta_salida, formato, ffmpeg_path, progress_hook=None, indices_seleccionados=None):
-    # Configurar opciones base
-    opciones_base = {
-        'ffmpeg_location': ffmpeg_path,
-    }
-    
-    # Si hay índices seleccionados (playlist), configurar para descargar solo esos
-    if indices_seleccionados:
-        # Convertir índices a formato de yt-dlp (1-based)
-        playlist_items = ','.join(map(str, indices_seleccionados))
-        opciones_base['playlist_items'] = playlist_items
-    
-    if formato == "mp3":
-        opciones = {
-            **opciones_base,
-            'format': 'bestaudio/best',
-            'outtmpl': f'{carpeta_salida}/%(title)s.%(ext)s',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
-    else:  # mp4 con audio garantizado
-        opciones = {
-            **opciones_base,
-            # baja mejor video y mejor audio
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio',
-            'merge_output_format': 'mp4',
-            'outtmpl': f'{carpeta_salida}/%(title)s.%(ext)s',
-            'postprocessors': [
-                {   # convierte el audio si está en opus → AAC dentro del mp4
-                    'key': 'FFmpegVideoConvertor',
-                    'preferedformat': 'mp4'
-                }
-            ],
-        }
-
-    if progress_hook:
-        opciones['progress_hooks'] = [progress_hook]
-
-    with yt_dlp.YoutubeDL(opciones) as ydl:
-        ydl.download([url])
