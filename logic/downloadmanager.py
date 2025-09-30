@@ -1,22 +1,22 @@
 import yt_dlp
 import os
 
-class DownloadManager:
+class GestorDescargas:
     """Gestor principal de descargas."""
     
     def __init__(self, ffmpeg_path):
         self.ffmpeg_path = ffmpeg_path
     
-    def _get_base_options(self):
+    def obtenerOpcionesBase(self):
         """Obtiene las opciones base para yt-dlp."""
         return {
             'ffmpeg_location': self.ffmpeg_path,
         }
     
-    def _get_mp3_options(self, output_path):
+    def obtenerOpcionesMp3(self, output_path):
         """Obtiene opciones específicas para descargas MP3."""
         return {
-            **self._get_base_options(),
+            **self.obtenerOpcionesBase(),
             'format': 'bestaudio/best',
             'outtmpl': f'{output_path}/%(title)s.%(ext)s',
             'postprocessors': [{
@@ -26,10 +26,10 @@ class DownloadManager:
             }],
         }
     
-    def _get_mp4_options(self, output_path):
+    def obtenerOpcionesMp4(self, output_path):
         """Obtiene opciones específicas para descargas MP4."""
         return {
-            **self._get_base_options(),
+            **self.obtenerOpcionesBase(),
             'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio',
             'merge_output_format': 'mp4',
             'outtmpl': f'{output_path}/%(title)s.%(ext)s',
@@ -55,9 +55,9 @@ class DownloadManager:
         
         # Configurar opciones según el formato
         if formato == "mp3":
-            opciones = self._get_mp3_options(carpeta_salida)
+            opciones = self.obtenerOpcionesMp3(carpeta_salida)
         else:
-            opciones = self._get_mp4_options(carpeta_salida)
+            opciones = self.obtenerOpcionesMp4(carpeta_salida)
         
         # Si hay índices seleccionados (playlist), configurar para descargar solo esos
         if indices_seleccionados:
@@ -72,7 +72,7 @@ class DownloadManager:
         with yt_dlp.YoutubeDL(opciones) as ydl:
             ydl.download([url])
     
-    def obtener_info_video(self, url):
+    def obtenerInfoVideo(self, url):
         """Obtiene información básica de un video."""
         try:
             opciones = {
@@ -96,5 +96,5 @@ class DownloadManager:
 # Función de compatibilidad con el código anterior
 def descargar(url, carpeta_salida, formato, ffmpeg_path, progress_hook=None, indices_seleccionados=None):
     """Función de compatibilidad con la versión anterior."""
-    manager = DownloadManager(ffmpeg_path)
+    manager = GestorDescargas(ffmpeg_path)
     return manager.descargar(url, carpeta_salida, formato, progress_hook, indices_seleccionados)

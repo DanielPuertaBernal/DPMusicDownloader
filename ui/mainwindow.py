@@ -1,11 +1,11 @@
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-from logic import (cargar_config, guardar_config, es_playlist, obtener_info_playlist, 
-                   es_url_radio_o_mix, descargar)
-from .playlist_dialog import PlaylistSelectionDialog
+from logic import (cargarConfig, guardarConfig, EsPlaylist, ObtenerInfoPlaylist, 
+                   esUrlRadioOMix, descargar)
+from .playlistdialog import DialogoSeleccionPlaylist
 
-class DownloaderApp:
+class AplicacionDescargador:
     """Aplicación principal del descargador."""
     
     def __init__(self, root):
@@ -14,7 +14,7 @@ class DownloaderApp:
         self._setup_styles()
         
         # Configuración
-        self.config = cargar_config()
+        self.config = cargarConfig()
         self.url_var = tk.StringVar()
         self.formato_var = tk.StringVar(value=self.config["formato"])
         
@@ -110,7 +110,7 @@ class DownloaderApp:
             return
             
         self.config["formato"] = self.formato_var.get()
-        guardar_config(self.config)
+        guardarConfig(self.config)
         
         # Verificar si es una playlist
         self.update_status("🔍 Verificando tipo de contenido...")
@@ -124,12 +124,12 @@ class DownloaderApp:
                 start_time = time.time()
                 
                 # Verificar si es URL de radio y avisar
-                if es_url_radio_o_mix(url):
+                if esUrlRadioOMix(url):
                     self.root.after(0, lambda: self.update_status("🔀 URL de radio/mix detectada, verificando..."))
                 
-                if es_playlist(url):
+                if EsPlaylist(url):
                     # Es una playlist, obtener información
-                    if es_url_radio_o_mix(url):
+                    if esUrlRadioOMix(url):
                         self.root.after(0, lambda: self.update_status("📻 Radio/Mix confirmado, obteniendo canciones..."))
                     else:
                         self.root.after(0, lambda: self.update_status("📋 Playlist detectada, obteniendo información..."))
@@ -138,7 +138,7 @@ class DownloaderApp:
                     if time.time() - start_time > timeout_seconds:
                         raise TimeoutError("Timeout obteniendo información de playlist")
                     
-                    playlist_info = obtener_info_playlist(url)
+                    playlist_info = ObtenerInfoPlaylist(url)
                     
                     if playlist_info and playlist_info['total_videos'] > 1:
                         self.root.after(0, lambda: self.mostrar_dialogo_playlist(url, playlist_info))
@@ -152,7 +152,7 @@ class DownloaderApp:
                     self.root.after(0, lambda: self.descargar_individual(url))
                     
             except TimeoutError as e:
-                if es_url_radio_o_mix(url):
+                if esUrlRadioOMix(url):
                     self.root.after(0, lambda: self.update_status("⏱️ Timeout verificando radio/mix, descargando solo el primer video..."))
                 else:
                     self.root.after(0, lambda: self.update_status("⏱️ Timeout verificando playlist, tratando como video individual..."))
@@ -160,7 +160,7 @@ class DownloaderApp:
             except Exception as e:
                 error_msg = str(e)
                 if "playlist" in error_msg.lower() or "timeout" in error_msg.lower():
-                    if es_url_radio_o_mix(url):
+                    if esUrlRadioOMix(url):
                         self.root.after(0, lambda: self.update_status("⚠️ Error verificando radio/mix, descargando como video individual..."))
                     else:
                         self.root.after(0, lambda: self.update_status("⚠️ Error verificando playlist, tratando como video individual..."))
@@ -174,7 +174,7 @@ class DownloaderApp:
         """Muestra el diálogo de selección de playlist"""
         self.bloquear_ui(False)  # Desbloquear para permitir interacción con el diálogo
         
-        dialog = PlaylistSelectionDialog(self.root, playlist_info)
+        dialog = DialogoSeleccionPlaylist(self.root, playlist_info)
         self.root.wait_window(dialog.dialog)
         
         if dialog.result == "all":
@@ -232,5 +232,5 @@ class DownloaderApp:
         carpeta = filedialog.askdirectory(title="Seleccionar carpeta de descargas")
         if carpeta:
             self.config["carpeta_descargas"] = carpeta
-            guardar_config(self.config)
+            guardarConfig(self.config)
             self.update_status(f"📂 Carpeta de descarga configurada: {carpeta}")

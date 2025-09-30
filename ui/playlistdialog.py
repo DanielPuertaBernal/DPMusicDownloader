@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-class PlaylistSelectionDialog:
+class DialogoSeleccionPlaylist:
     """Diálogo para seleccionar videos de una playlist."""
     
     def __init__(self, parent, playlist_info):
@@ -18,9 +18,9 @@ class PlaylistSelectionDialog:
         # Centrar el diálogo
         self.dialog.transient(parent)
         
-        self.setup_ui(playlist_info)
+        self.configurarUi(playlist_info)
         
-    def setup_ui(self, playlist_info):
+    def configurarUi(self, playlist_info):
         """Configura la interfaz del diálogo."""
         main_frame = tk.Frame(self.dialog, bg="#2C3E50")
         main_frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -44,9 +44,9 @@ class PlaylistSelectionDialog:
         quick_frame.pack(fill="x", pady=(0, 10))
         
         ttk.Button(quick_frame, text="✅ Seleccionar Todo", 
-                  command=self.select_all).pack(side="left", padx=5)
+                  command=self.seleccionarTodo).pack(side="left", padx=5)
         ttk.Button(quick_frame, text="❌ Deseleccionar Todo", 
-                  command=self.deselect_all).pack(side="left", padx=5)
+                  command=self.deseleccionarTodo).pack(side="left", padx=5)
         
         # Frame con scroll para la lista de videos
         list_frame = tk.Frame(main_frame, bg="#2C3E50")
@@ -88,20 +88,20 @@ class PlaylistSelectionDialog:
             })
         
         # Bind para manejar clicks
-        self.video_listbox.bind('<Button-1>', self.on_click)
+        self.video_listbox.bind('<Button-1>', self.alHacerClick)
         
         # Frame para botones de confirmación
         button_frame = tk.Frame(main_frame, bg="#2C3E50")
         button_frame.pack(fill="x", pady=10)
         
         ttk.Button(button_frame, text="⬇️ Descargar Seleccionados", 
-                  command=self.download_selected).pack(side="left", padx=10)
+                  command=self.descargarSeleccionados).pack(side="left", padx=10)
         ttk.Button(button_frame, text="⬇️ Descargar Toda la Playlist", 
-                  command=self.download_all).pack(side="left", padx=10)
+                  command=self.descargarTodo).pack(side="left", padx=10)
         ttk.Button(button_frame, text="❌ Cancelar", 
-                  command=self.cancel).pack(side="right", padx=10)
+                  command=self.cancelar).pack(side="right", padx=10)
         
-    def on_click(self, event):
+    def alHacerClick(self, event):
         """Maneja el click en un elemento de la lista"""
         index = self.video_listbox.nearest(event.y)
         if index < len(self.video_data):
@@ -117,7 +117,7 @@ class PlaylistSelectionDialog:
             self.video_listbox.delete(index)
             self.video_listbox.insert(index, texto)
     
-    def select_all(self):
+    def seleccionarTodo(self):
         """Selecciona todos los videos"""
         for i, video in enumerate(self.video_data):
             video['seleccionado'] = True
@@ -126,7 +126,7 @@ class PlaylistSelectionDialog:
             self.video_listbox.delete(i)
             self.video_listbox.insert(i, texto)
     
-    def deselect_all(self):
+    def deseleccionarTodo(self):
         """Deselecciona todos los videos"""
         for i, video in enumerate(self.video_data):
             video['seleccionado'] = False
@@ -135,7 +135,7 @@ class PlaylistSelectionDialog:
             self.video_listbox.delete(i)
             self.video_listbox.insert(i, texto)
     
-    def download_selected(self):
+    def descargarSeleccionados(self):
         """Descarga solo los videos seleccionados"""
         seleccionados = [v['indice'] for v in self.video_data if v['seleccionado']]
         if not seleccionados:
@@ -146,12 +146,12 @@ class PlaylistSelectionDialog:
         self.result = "selected"
         self.dialog.destroy()
     
-    def download_all(self):
+    def descargarTodo(self):
         """Descarga toda la playlist"""
         self.result = "all"
         self.dialog.destroy()
     
-    def cancel(self):
+    def cancelar(self):
         """Cancela la operación"""
         self.result = "cancel"
         self.dialog.destroy()

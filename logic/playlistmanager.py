@@ -1,38 +1,75 @@
 import yt_dlp
-from .url_detector import es_url_radio_o_mix
+from .urldetector import esUrlRadioOMix
 
-def es_playlist(url):
+def EsPlaylist(url):
     """Detecta si la URL es una playlist de YouTube"""
     try:
         # Si es una URL de radio/mix, preguntar al usuario pero con timeout más corto
-        if es_url_radio_o_mix(url):
+        if esUrlRadioOMix(url):
             print("Detectada URL de radio/mix de YouTube Music")
         
         # Primero verificar si la URL contiene parámetros de playlist
         if 'list=' in url or 'playlist' in url.lower():
-            # Configuración más específica para evitar que se cuelgue
+            # Extraer el ID de la playlist de la URL
+            playlist_id = None
+            if 'list=' in url:
+                import re
+                match = re.search(r'list=([^&]+)', url)
+                if match:
+                    playlist_id = match.group(1)
+            
+            # Si tenemos ID de playlist, construir URL directa de playlist
+            if playlist_id:
+                playlist_url = f"https://www.youtube.com/playlist?list={playlist_id}"
+                
+                # Configuración para extraer playlist directamente
+                opciones = {
+                    'quiet': True,
+                    'no_warnings': True,
+                    'extract_flat': True,
+                    'socket_timeout': 15,
+                    'retries': 0,
+                    'ignoreerrors': True,
+                }
+                
+                # Para URLs de radio, usar timeout aún más agresivo
+                if esUrlRadioOMix(url):
+                    opciones['socket_timeout'] = 10
+                    opciones['playlistend'] = 20
+                
+                with yt_dlp.YoutubeDL(opciones) as ydl:
+                    info = ydl.extract_info(playlist_url, download=False)
+                    
+                    # Si es tipo playlist O tiene entries
+                    if info and (info.get('_type') == 'playlist' or info.get('entries')):
+                        entries = info.get('entries', [])
+                        # Filtrar entradas válidas
+                        valid_entries = [e for e in entries if e is not None]
+                        # Solo considerar playlist si tiene más de 1 video
+                        return len(valid_entries) > 1
+                    return False
+            
+            # Si no pudimos extraer ID, usar método original
             opciones = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': True,  # No extraer info completa, solo básica
-                'socket_timeout': 15,  # Timeout más corto para radios
-                'retries': 0,  # No reintentar si falla
-                'ignoreerrors': True,  # Ignorar errores y continuar
+                'extract_flat': True,
+                'socket_timeout': 15,
+                'retries': 0,
+                'ignoreerrors': True,
+                'yes_playlist': True,
             }
             
-            # Para URLs de radio, usar timeout aún más agresivo
-            if es_url_radio_o_mix(url):
+            if esUrlRadioOMix(url):
                 opciones['socket_timeout'] = 10
-                opciones['playlistend'] = 20  # Limitar a primeros 20 para radios
+                opciones['playlistend'] = 20
             
             with yt_dlp.YoutubeDL(opciones) as ydl:
                 info = ydl.extract_info(url, download=False)
-                # Verificar si es playlist y tiene múltiples entradas
-                if info and info.get('_type') == 'playlist':
+                
+                if info and (info.get('_type') == 'playlist' or info.get('entries')):
                     entries = info.get('entries', [])
-                    # Filtrar entradas válidas
                     valid_entries = [e for e in entries if e is not None]
-                    # Solo considerar playlist si tiene más de 1 video
                     return len(valid_entries) > 1
                 return False
         else:
@@ -42,31 +79,45 @@ def es_playlist(url):
         print(f"Error verificando playlist (tratando como video individual): {e}")
         return False
 
-def obtener_info_playlist(url):
+def ObtenerInfoPlaylist(url):
     """Obtiene información de la playlist (títulos y URLs de videos)"""
     try:
+        # Extraer el ID de la playlist de la URL
+        playlist_id = None
+        if 'list=' in url:
+            import re
+            match = re.search(r'list=([^&]+)', url)
+            if match:
+                playlist_id = match.group(1)
+        
+        # URL a usar para extracción
+        url_a_usar = url
+        if playlist_id:
+            url_a_usar = f"https://www.youtube.com/playlist?list={playlist_id}"
+        
         # Configuración base
         opciones = {
             'quiet': True,
             'no_warnings': True,
-            'extract_flat': True,  # Solo extrae metadatos básicos
-            'socket_timeout': 15,  # Timeout base
-            'retries': 0,  # No reintentar
-            'ignoreerrors': True,  # Ignorar errores
-            'playlistend': 30,  # Limitar videos por defecto
+            'extract_flat': True,
+            'socket_timeout': 15,
+            'retries': 0,
+            'ignoreerrors': True,
+            'playlistend': 30,
         }
         
         # Para URLs de radio/mix, configuración más restrictiva
-        if es_url_radio_o_mix(url):
+        if esUrlRadioOMix(url):
             opciones.update({
                 'socket_timeout': 10,
                 'playlistend': 15,  # Solo primeros 15 para radios
             })
         
         with yt_dlp.YoutubeDL(opciones) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(url_a_usar, download=False)
             
-            if info and info.get('_type') == 'playlist':
+            # Buscar playlist info - puede estar en diferentes lugares
+            if info and (info.get('_type') == 'playlist' or info.get('entries')):
                 entries = info.get('entries', [])
                 
                 # Filtrar entradas válidas
@@ -77,7 +128,7 @@ def obtener_info_playlist(url):
                 
                 # Para radios, usar título más descriptivo
                 titulo_playlist = info.get('title', 'Playlist sin título')
-                if es_url_radio_o_mix(url):
+                if esUrlRadioOMix(url):
                     if 'radio' in titulo_playlist.lower() or 'mix' in titulo_playlist.lower():
                         titulo_playlist = f"🔀 {titulo_playlist}"
                     else:

@@ -3,7 +3,7 @@ import json
 
 CONFIG_FILE = "config.json"
 
-def cargar_config():
+def cargarConfig():
     """Carga la configuración desde el archivo JSON."""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
@@ -14,15 +14,15 @@ def cargar_config():
         "ffmpeg_path": r"C:\Users\danie\OneDrive\Documentos\ffmpeg\ffmpeg-8.0-essentials_build\bin"
     }
 
-def guardar_config(config):
+def guardarConfig(config):
     """Guarda la configuración en el archivo JSON."""
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=4)
 
-def actualizar_config(config, **kwargs):
+def actualizarConfig(config, **kwargs):
     """Actualiza la configuración con nuevos valores."""
     for key, value in kwargs.items():
         if key in config:
             config[key] = value
-    guardar_config(config)
+    guardarConfig(config)
     return config

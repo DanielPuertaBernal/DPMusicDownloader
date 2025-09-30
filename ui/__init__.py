@@ -1,7 +1,7 @@
-from .main_window import DownloaderApp
-from .playlist_dialog import PlaylistSelectionDialog
+from .mainwindow import AplicacionDescargador
+from .playlistdialog import DialogoSeleccionPlaylist
 
 __all__ = [
-    'DownloaderApp',
-    'PlaylistSelectionDialog'
+    'AplicacionDescargador',
+    'DialogoSeleccionPlaylist'
 ]
