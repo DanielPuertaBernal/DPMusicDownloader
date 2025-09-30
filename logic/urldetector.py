@@ -5,9 +5,13 @@ def esUrlRadioOMix(url):
         'radio',
         'RD',  # Radio prefix en las playlist IDs
         'mix',
-        'shuffle=1'
+        'shuffle=1',
+        'RDMM',  # Radio Music Mix específico
+        'RDCLAK',  # Otro tipo de radio
+        'RDQM',  # Radio based on song
+        'RDEM',  # Radio based on artist
     ]
-    return any(indicator in url.lower() for indicator in radio_indicators)
+    return any(indicator in url.upper() for indicator in radio_indicators)
 
 def esUrlValida(url):
     """Verifica si la URL es válida de YouTube."""
